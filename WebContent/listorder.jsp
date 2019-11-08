@@ -34,7 +34,7 @@ Statement stmt = con.createStatement();
 String sql = "SELECT * FROM ordersummary"; 
 ResultSet rst = stmt.executeQuery(sql);
 while(rst.next()){
-	out.println(rst.getString("orderID")+","+rst.getString("orderDate")+rst.getString("totalAmount")+rst.getString("shiptoAddress")+rst.getString("shiptoCity")+rst.getString("shiptoState")+rst.getString("shiptoPostalCode")+rst.getString("shiptoCountry")+rst.getString("customerId"));
+	out.println("\n"+rst.getString("orderID")+","+rst.getString("orderDate")+rst.getString("totalAmount")+rst.getString("shiptoAddress")+rst.getString("shiptoCity")+rst.getString("shiptoState")+rst.getString("shiptoPostalCode")+rst.getString("shiptoCountry")+rst.getString("customerId"));
 	
 }
 con.close();
