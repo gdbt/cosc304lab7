@@ -20,37 +20,42 @@ catch (java.lang.ClassNotFoundException e)
 {
 	out.println("ClassNotFoundException: " +e);
 }
-
 // Useful code for formatting currency values:
-// NumberFormat currFormat = NumberFormat.getCurrencyInstance();
-// out.println(currFormat.format(5.0);  // Prints $5.00
-
+ NumberFormat currFormat = NumberFormat.getCurrencyInstance();
+// out.println(currFormat.format(5.0);  // Prints $5.00 
 // Make connection
 String url = "jdbc:sqlserver://sql04.ok.ubc.ca:1433;DatabaseName=db_narndt;";
 String uid = "narndt";
 String ps = "43873165";
-Connection con = DriverManager.getConnection(url,uid,ps);
-Statement stmt = con.createStatement();
-String sql = "SELECT * FROM ordersummary"; 
-ResultSet rst = stmt.executeQuery(sql);
-while(rst.next()){
-	out.println("\n"+rst.getString("orderID")+","+rst.getString("orderDate")+rst.getString("totalAmount")+rst.getString("shiptoAddress")+rst.getString("shiptoCity")+rst.getString("shiptoState")+rst.getString("shiptoPostalCode")+rst.getString("shiptoCountry")+rst.getString("customerId"));
+try(Connection con = DriverManager.getConnection(url,uid,ps);Statement stmt = con.createStatement();){
+	String sql = "SELECT * FROM ordersummary,customer WHERE ordersummary.customerId = customer.customerId "; 
+	ResultSet rst = stmt.executeQuery(sql);
+	out.println("<h2>Orders<h2><table border=1><tr><th>OrderId  </th><th>Order Date </th><th>CustomerId </th><th>Customer Name </th><th>Total Amount </th></tr>");
+	while(rst.next()){
+		out.println("<tr><td>"+rst.getString("orderId")+"</td><td>"+rst.getDate("orderDate")+"</td><td>"+rst.getString("customerId")+"</td><td>"+rst.getString("firstName")+" "+rst.getString("lastName")+"</td><td>"+currFormat.format(rst.getFloat("totalAmount"))+"</td></tr>");
+		String ord = rst.getString("orderId");
+		String sql2 = "SELECT productId, quantity, price FROM orderproduct WHERE orderId = ?";
+		PreparedStatement pstmt = con.prepareStatement(sql2);
+		pstmt.setString(1,ord);
+		ResultSet rst2 = pstmt.executeQuery();
+		out.println("<tr align=right><td colspan=5><table border=1><td><th>Product Id  </th><th>Quantity  </th><th>Price  </th></tr>");
+		while(rst2.next()){
+			out.println("<tr><td>"+rst2.getString("productId")+"</td><td>"+rst2.getString("quantity")+"</td><td>"+currFormat.format(rst2.getFloat("price"))+"</td></tr></table>");
+		}
+	}
 	
-}
+	out.println("</table>");
 con.close();
+}
 // Write query to retrieve all order summary records
-
 // For each order in the ResultSet
-
 	// Print out the order summary information
 	// Write a query to retrieve the products in the order
 	//   - Use a PreparedStatement as will repeat this query many times
 	// For each product in the order
 		// Write out product information 
-
 // Close connection
 %>
 
 </body>
 </html>
-
