@@ -23,7 +23,10 @@ HashMap<String, ArrayList<Object>> productList = (HashMap<String, ArrayList<Obje
 // If either are not true, display an error message
 
 // Make connection
-
+String url = "jdbc:sqlserver://sql04.ok.ubc.ca:1433;DatabaseName=db_narndt;";
+String uid = "narndt";
+String ps = "43873165";
+try(Connection con = DriverManager.getConnection(url,uid,ps);Statement stmt = con.createStatement();){
 // Save order information to database
 
 
@@ -59,6 +62,10 @@ HashMap<String, ArrayList<Object>> productList = (HashMap<String, ArrayList<Obje
 // Print out order summary
 
 // Clear cart if order placed successfully
+con.close();
+}catch(SQLException e){
+
+}
 %>
 </BODY>
 </HTML>
