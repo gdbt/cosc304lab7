@@ -1,4 +1,4 @@
-<%@ page import="java.sql.*,java.net.URLEncoder" %>
+<%@ page import= "java.sql.*,java.net.URLEncoder" %>
 <%@ page import="java.text.NumberFormat" %>
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF8"%>
 
@@ -25,7 +25,7 @@ products are shown --%>
 
 <% // Get product name to search for
 String name = request.getParameter("productName");
-boolean hasQuery = name != null && !name.equals("");
+boolean hasQuery = name!=null && !name.equals("");
 		
 //Note: Forces loading of SQL Server driver
 try
@@ -49,33 +49,35 @@ NumberFormat currFormat = NumberFormat.getCurrencyInstance();
 //Use it to build a query and print out the resultset.  Make sure to use PreparedStatement!
 try (Connection con = DriverManager.getConnection(url,uid,ps);
 ){		
-	// prepared statement listing all products
-	PreparedStatement allprodpst = con.prepareStatement("SELECT * FROM product");
-	
-	// prepared statement listing queried products
-	PreparedStatement prodquerypst = con.prepareStatement("SELECT * FROM product WHERE productName LIKE '%"+name+"%'");
 	
 	if (!hasQuery){
+		// prepared statement listing all products
+		PreparedStatement allprodpst = con.prepareStatement("SELECT * FROM product");
+		allprodrst = allprodpst.executeQuery();
+		
 		// print all products
 		out.println("<h2>All Products</h2><table><tr><th></th><th>Product Name </th><th>Price </th></tr>");
-		allprodrst = allprodpst.executeQuery();
 		while (allprodrst.next()) {
 			//For each product create a link of the form
 			// addcart.jsp?id=productId&name=productName&price=productPrice
-			String produrl = "addcart.jsp?id="+allprodrst.getString(1)+"&name="+allprodrst.getString(2)+"&price="+currFormat.format(allprodrst.getFloat(3)); 
+			String produrl = "addcart.jsp?id="+allprodrst.getString(1)+"&name="+allprodrst.getString(2)+"&price="+allprodrst.getFloat(3); 
 			// Print out the ResultSet
-			out.println("<tr><td><a href="+produrl+"</a>Add to cart</td><td>"+allprodrst.getString(2)+"</td><td>"+currFormat.format(allprodrst.getFloat(3))+"</td></tr>");
+			out.println("<tr><td><a href="+produrl+">Add to cart</a></td><td>"+allprodrst.getString(2)+"</td><td>"+currFormat.format(allprodrst.getFloat(3))+"</td></tr>");
 		}
 		out.println("</table>");	
 	}
 
 	else{
-		// print query resultset 
-		out.println("<h2>Products containing "+name+"</h2><table><tr><th></th><th>Product Name</th><th>Price</th></tr>");
+		// prepared statement listing queried products
+		PreparedStatement prodquerypst = con.prepareStatement("SELECT * FROM product WHERE productName LIKE ?");
+		prodquerypst.setString(1, "%"+name+"%");
 		prodqueryrst = prodquerypst.executeQuery();
+		
+		// print query resultset 
+		out.println("<h2>Products containing '"+name+"'</h2><table><tr><th></th><th>Product Name </th><th>Price </th></tr>");
 		while (prodqueryrst.next()){
-			String produrl = "addcart.jsp?id="+allprodrst.getString(1)+"&name="+allprodrst.getString(2)+"&price="+currFormat.format(allprodrst.getFloat(3));
-			out.println("<tr><td><a href="+produrl+"</a>Add to cart</td><td>"+allprodrst.getString(2)+"</td><td>"+currFormat.format(allprodrst.getFloat(3))+"</td></tr>");
+			String produrl = "addcart.jsp?id="+prodqueryrst.getString(1)+"&name="+prodqueryrst.getString(2)+"&price="+prodqueryrst.getFloat(3);
+			out.println("<tr><td><a href="+produrl+">Add to cart</a></td><td>"+prodqueryrst.getString(2)+"</td><td>"+currFormat.format(prodqueryrst.getFloat(3))+"</td></tr>");
 		}
 		out.println("</table>");
 	}
