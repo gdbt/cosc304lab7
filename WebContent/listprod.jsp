@@ -1,6 +1,14 @@
 <%@ page import="java.sql.*,java.net.URLEncoder" %>
 <%@ page import="java.text.NumberFormat" %>
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF8"%>
+
+<%-- +1 SQL server connection information and making successful connection --%>
+<%-- +2 using product name parameter to filter products shown (must handle case where nothing is provided in which case all 
+products are shown --%>
+<%-- +2 displaying table of products --%>
+<%-- +3 building web link URL to allow products to be added to cart --%>
+<%-- +1 for closing connection (either explicitly or as part of try-catch with resources syntax) --%>
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -17,6 +25,7 @@
 
 <% // Get product name to search for
 String name = request.getParameter("productName");
+boolean hasQuery = name != null && !name.equals("");
 		
 //Note: Forces loading of SQL Server driver
 try
@@ -25,19 +34,59 @@ try
 }
 catch (java.lang.ClassNotFoundException e)
 {
-	out.println("ClassNotFoundException: " +e);
+	out.println("ClassNotFoundException: " + e);
 }
 
-// Variable name now contains the search string the user entered
-// Use it to build a query and print out the resultset.  Make sure to use PreparedStatement!
-
 // Make the connection
+String url = "jdbc:sqlserver://sql04.ok.ubc.ca:1433;DatabaseName=db_narndt;";
+String uid = "narndt";
+String ps = "43873165";
 
-// Print out the ResultSet
+ResultSet allprodrst = null, prodqueryrst = null;
+NumberFormat currFormat = NumberFormat.getCurrencyInstance();
 
-// For each product create a link of the form
-// addcart.jsp?id=productId&name=productName&price=productPrice
-// Close connection
+//Variable name now contains the search string the user entered
+//Use it to build a query and print out the resultset.  Make sure to use PreparedStatement!
+try (Connection con = DriverManager.getConnection(url,uid,ps);
+){		
+	// prepared statement listing all products
+	PreparedStatement allprodpst = con.prepareStatement("SELECT * FROM product");
+	
+	// prepared statement listing queried products
+	PreparedStatement prodquerypst = con.prepareStatement("SELECT * FROM product WHERE productName LIKE '%"+name+"%'");
+	
+	if (!hasQuery){
+		// print all products
+		out.println("<h2>All Products</h2><table><tr><th></th><th>Product Name </th><th>Price </th></tr>");
+		allprodrst = allprodpst.executeQuery();
+		while (allprodrst.next()) {
+			//For each product create a link of the form
+			// addcart.jsp?id=productId&name=productName&price=productPrice
+			String produrl = "addcart.jsp?id="+allprodrst.getString(1)+"&name="+allprodrst.getString(2)+"&price="+currFormat.format(allprodrst.getFloat(3)); 
+			// Print out the ResultSet
+			out.println("<tr><td><a href="+produrl+"</a>Add to cart</td><td>"+allprodrst.getString(2)+"</td><td>"+currFormat.format(allprodrst.getFloat(3))+"</td></tr>");
+		}
+		out.println("</table>");	
+	}
+
+	else{
+		// print query resultset 
+		out.println("<h2>Products containing "+name+"</h2><table><tr><th></th><th>Product Name</th><th>Price</th></tr>");
+		prodqueryrst = prodquerypst.executeQuery();
+		while (prodqueryrst.next()){
+			String produrl = "addcart.jsp?id="+allprodrst.getString(1)+"&name="+allprodrst.getString(2)+"&price="+currFormat.format(allprodrst.getFloat(3));
+			out.println("<tr><td><a href="+produrl+"</a>Add to cart</td><td>"+allprodrst.getString(2)+"</td><td>"+currFormat.format(allprodrst.getFloat(3))+"</td></tr>");
+		}
+		out.println("</table>");
+	}
+	
+	// close connection
+	if (con!=null) con.close();
+	
+}
+catch (SQLException e) {
+	out.println("SQLException: " + e);
+}
 
 // Useful code for formatting currency values:
 // NumberFormat currFormat = NumberFormat.getCurrencyInstance();
@@ -46,4 +95,3 @@ catch (java.lang.ClassNotFoundException e)
 
 </body>
 </html>
-
