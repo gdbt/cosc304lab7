@@ -4,6 +4,9 @@
 <%@ page import="java.util.Iterator" %>
 <%@ page import="java.util.ArrayList" %>
 <%@ page import="java.util.Map" %>
+<%@ page import="java.util.Date" %>
+<%@ page import="java.text.DateFormat" %>
+<%@ page import="java.text.SimpleDateFormat" %>
 <%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF8"%>
 <!DOCTYPE html>
 <html>
@@ -48,25 +51,20 @@ try(Connection con = DriverManager.getConnection(url,uid,ps);){
 		}
 		else{
 			//Use retrieval of auto-generated keys.
-
-			String ssql ="SELECT orderId FROM ordersummary ";
-			PreparedStatement derp = con.prepareStatement(ssql, Statement.RETURN_GENERATED_KEYS);
-			derp.execute();
-			ResultSet keys = derp.getGeneratedKeys();
-			keys.next();
-			int orderId = keys.getInt(1);
 			
 			String sql3 = "INSERT INTO ordersummary (totalAmount,customerId) VALUES (?,?)";
-			PreparedStatement pstmt = con.prepareStatement(sql3);
+			PreparedStatement pstmt = con.prepareStatement(sql3, Statement.RETURN_GENERATED_KEYS);
 			double tot = 0.0;
 			pstmt.setDouble(1,tot);
 			pstmt.setString(2,custId);
 			pstmt.executeUpdate();
 			System.out.println("Insert ordersummary successfull");
+			ResultSet keys = pstmt.getGeneratedKeys();
+			keys.next();
+			int orderId = keys.getInt(1);
 			
-
 			
-
+			
 			// Insert each item into OrderProduct table using OrderId from previous INSERT
 			// Update total amount for order record
 			// Here is the code to traverse through a HashMap
@@ -88,28 +86,33 @@ try(Connection con = DriverManager.getConnection(url,uid,ps);){
 				System.out.println(pr);
 				System.out.println(qty);
 				System.out.println("Order id = " + orderId);
-
-				String sqlinpo = ("INSERT INTO orderproduct (productId, quantity, price) VALUES (ordersummary.orderId,?,?,?)");
+				String sqlinpo = ("INSERT INTO orderproduct VALUES (?,?,?,?)");
 				PreparedStatement pst4 = con.prepareStatement(sqlinpo);
-				//pst4.setInt(1,orderId);
-				pst4.setInt(1,prodid);
-				pst4.setInt(2,qty);
-				pst4.setDouble(3,pr);
+				pst4.setInt(1,orderId);
+				pst4.setInt(2,prodid);
+				pst4.setInt(3,qty);
+				pst4.setDouble(4,pr);
 				pst4.executeUpdate();
 				double totitemprice = qty*pr;
             	tot += totitemprice;
 			}
-			System.out.println("We got here post insert"); //DOES NOT REACH THIS AREA
+			DateFormat dateform = new SimpleDateFormat("YYYY-MM-DD");
+			Date dateup = new Date();
+			String todaydate = dateform.format(dateup);
+			System.out.println(todaydate);
 			String updatekeys = "UPDATE ordersummary SET totalAmount = ? WHERE orderId = ?";
 			PreparedStatement pst5 = con.prepareStatement(updatekeys);
 			pst5.setDouble(1,tot);
 			pst5.setInt(2,orderId);
-			
+			String updateDate = "UPDATE ordersummary SET orderdate = ? WHERE orderId = ?";
+			PreparedStatement pst6 = con.prepareStatement(updatekeys);
+			pst6.setString(1,todaydate);
+			pst6.setInt(2,orderId);
 			//HTML time
-			String productgrab = "SELECT productId, productName, quantity, price FROM product,orderproduct WHERE product.productId = orderproduct.productId AND orderId = ? ";
-			PreparedStatement pst6 = con.prepareStatement(productgrab);
+			String productgrab = "SELECT product.productId, productName, quantity, price FROM product,orderproduct WHERE product.productId = orderproduct.productId AND orderId = ? ";
+			PreparedStatement pst7 = con.prepareStatement(productgrab);
 			pst6.setInt(1,orderId);
-			ResultSet rstins = pst6.executeQuery();
+			ResultSet rstins = pst7.executeQuery();
 			out.println("<h1>Your Order Summary</h1>");
 			
 			out.println("<table><tbody><tr><th>Product Id  </th><th>Product Name </th><th>Quantity </th><th>Price </th><th>Sub Total</th></tr>");
