@@ -11,7 +11,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>YOUR NAME Grocery Order Processing</title>
+<title>Future Technology Wholesaler Order Processing</title>
 </head>
 <body>
 
@@ -54,8 +54,8 @@ try(Connection con = DriverManager.getConnection(url,uid,ps);){
 			
 			String sql3 = "INSERT INTO ordersummary (totalAmount,customerId) VALUES (?,?)";
 			PreparedStatement pstmt = con.prepareStatement(sql3, Statement.RETURN_GENERATED_KEYS);
-			double tot = 0.0;
-			pstmt.setDouble(1,tot);
+			float tot = 0;
+			pstmt.setFloat(1,tot);
 			pstmt.setString(2,custId);
 			pstmt.executeUpdate();
 			System.out.println("Insert ordersummary successfull");
@@ -77,7 +77,8 @@ try(Connection con = DriverManager.getConnection(url,uid,ps);){
 				ArrayList<Object> product = (ArrayList<Object>) entry.getValue();
 				String productId = (String) product.get(0);
 	        	String price = (String) product.get(2);
-				double pr = Double.parseDouble(price);
+	        	System.out.println("Heres price in while: " + price);
+				float pr = Float.parseFloat(price);
 				int qty = ((Integer)product.get(3)).intValue();
 				int prodid = Integer.parseInt(productId);
 				
@@ -93,25 +94,27 @@ try(Connection con = DriverManager.getConnection(url,uid,ps);){
 				pst4.setInt(3,qty);
 				pst4.setDouble(4,pr);
 				pst4.executeUpdate();
-				double totitemprice = qty*pr;
+				Float totitemprice = qty*pr;
             	tot += totitemprice;
 			}
-			DateFormat dateform = new SimpleDateFormat("YYYY-MM-DD");
+			DateFormat dateform = new SimpleDateFormat("YYYY-MM-DD HH:MM:SS");
 			Date dateup = new Date();
 			String todaydate = dateform.format(dateup);
 			System.out.println(todaydate);
 			String updatekeys = "UPDATE ordersummary SET totalAmount = ? WHERE orderId = ?";
 			PreparedStatement pst5 = con.prepareStatement(updatekeys);
-			pst5.setDouble(1,tot);
+			pst5.setFloat(1,tot);
 			pst5.setInt(2,orderId);
-			String updateDate = "UPDATE ordersummary SET orderdate = ? WHERE orderId = ?";
+			pst5.executeUpdate();
+			String updateDate = "UPDATE ordersummary SET orderdate = '?' WHERE orderId = ?";
 			PreparedStatement pst6 = con.prepareStatement(updatekeys);
 			pst6.setString(1,todaydate);
 			pst6.setInt(2,orderId);
+			//pst6.executeUpdate();
 			//HTML time
 			String productgrab = "SELECT product.productId, productName, quantity, price FROM product,orderproduct WHERE product.productId = orderproduct.productId AND orderId = ? ";
 			PreparedStatement pst7 = con.prepareStatement(productgrab);
-			pst6.setInt(1,orderId);
+			pst7.setInt(1,orderId);
 			ResultSet rstins = pst7.executeQuery();
 			out.println("<h1>Your Order Summary</h1>");
 			
