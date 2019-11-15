@@ -12,7 +12,7 @@ products are shown --%>
 <!DOCTYPE html>
 <html>
 <head>
-<title>YOUR NAME Grocery</title>
+<title>Legal Future Tech Wholesaler</title>
 </head>
 <body>
 
@@ -36,15 +36,12 @@ catch (java.lang.ClassNotFoundException e)
 {
 	out.println("ClassNotFoundException: " + e);
 }
-
 // Make the connection
 String url = "jdbc:sqlserver://sql04.ok.ubc.ca:1433;DatabaseName=db_narndt;";
 String uid = "narndt";
 String ps = "43873165";
-
 ResultSet allprodrst = null, prodqueryrst = null;
 NumberFormat currFormat = NumberFormat.getCurrencyInstance();
-
 //Variable name now contains the search string the user entered
 //Use it to build a query and print out the resultset.  Make sure to use PreparedStatement!
 try (Connection con = DriverManager.getConnection(url,uid,ps);
@@ -60,13 +57,13 @@ try (Connection con = DriverManager.getConnection(url,uid,ps);
 		while (allprodrst.next()) {
 			//For each product create a link of the form
 			// addcart.jsp?id=productId&name=productName&price=productPrice
-			String produrl = "addcart.jsp?id="+allprodrst.getString(1)+"&name="+allprodrst.getString(2)+"&price="+allprodrst.getFloat(3); 
+			
+			String produrl = "\"addcart.jsp?id="+allprodrst.getString(1)+"&name="+allprodrst.getString(2)+"&price="+allprodrst.getString("productPrice"); 
 			// Print out the ResultSet
-			out.println("<tr><td><a href="+produrl+">Add to cart</a></td><td>"+allprodrst.getString(2)+"</td><td>"+currFormat.format(allprodrst.getFloat(3))+"</td></tr>");
+			out.println("<tr><td><a href="+produrl+"\">Add to cart</a></td><td>"+allprodrst.getString(2)+"</td><td>"+currFormat.format(allprodrst.getFloat("productPrice"))+"</td></tr>");
 		}
 		out.println("</table>");	
 	}
-
 	else{
 		// prepared statement listing queried products
 		PreparedStatement prodquerypst = con.prepareStatement("SELECT * FROM product WHERE productName LIKE ?");
@@ -89,7 +86,6 @@ try (Connection con = DriverManager.getConnection(url,uid,ps);
 catch (SQLException e) {
 	out.println("SQLException: " + e);
 }
-
 // Useful code for formatting currency values:
 // NumberFormat currFormat = NumberFormat.getCurrencyInstance();
 // out.println(currFormat.format(5.0);	// Prints $5.00
