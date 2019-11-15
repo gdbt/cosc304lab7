@@ -17,23 +17,28 @@
 String custId = request.getParameter("customerId");
 @SuppressWarnings({"unchecked"})
 HashMap<String, ArrayList<Object>> productList = (HashMap<String, ArrayList<Object>>) session.getAttribute("productList");
-
 // Determine if valid customer id was entered
 // Determine if there are products in the shopping cart
 // If either are not true, display an error message
-
 // Make connection
 String url = "jdbc:sqlserver://sql04.ok.ubc.ca:1433;DatabaseName=db_narndt;";
 String uid = "narndt";
 String ps = "43873165";
 // Save order information to database
-try(Connection con = DriverManager.getConnection(url,uid,ps); Statement stm = con.createStatement();){
-	String sql = "SELECT firstName, lastName, customerId  FROM customer WHERE customerId = ?";
-	PreparedStatement pst = con.prepareStatement(sql);
-	pst.setString(1, custId);
-	ResultSet rst = pst.executeQuery();
+try(Connection con = DriverManager.getConnection(url,uid,ps);){
 	
-	if(rst.next()){
+	Boolean tester = false;
+	String sql = "SELECT firstName, lastName, customerId  FROM customer";
+	PreparedStatement pst = con.prepareStatement(sql);
+	ResultSet rst = pst.executeQuery();
+	while(rst.next() && tester == false){
+		String cussy = rst.getString("customerId");
+		if(cussy.equals(custId)){
+			tester = true;
+		}
+	}
+	
+	if(tester == true){
 		String fname = rst.getString("firstName");
 		String lname = rst.getString("lastName");
 		String fullname = (fname + " " + lname);
@@ -43,22 +48,29 @@ try(Connection con = DriverManager.getConnection(url,uid,ps); Statement stm = co
 		}
 		else{
 			//Use retrieval of auto-generated keys.
-			String sql3 = "INSERT (customerId, totalAmount) INTO ordersummary (?, ?)";
-			PreparedStatement pstmt = con.prepareStatement(sql3, Statement.RETURN_GENERATED_KEYS);
-			double tot = 0.0;
-			pstmt.setString(1,custId);
-			pstmt.setDouble(2,tot);
-			ResultSet keys = pstmt.getGeneratedKeys();
+
+			String ssql ="SELECT orderId FROM ordersummary ";
+			PreparedStatement derp = con.prepareStatement(ssql, Statement.RETURN_GENERATED_KEYS);
+			derp.execute();
+			ResultSet keys = derp.getGeneratedKeys();
 			keys.next();
 			int orderId = keys.getInt(1);
-			// Insert each item into OrderProduct table using OrderId from previous INSERT
-			// Insert each item into OrderProduct table using OrderId from previous INSERT
+			
+			String sql3 = "INSERT INTO ordersummary (totalAmount,customerId) VALUES (?,?)";
+			PreparedStatement pstmt = con.prepareStatement(sql3);
+			double tot = 0.0;
+			pstmt.setDouble(1,tot);
+			pstmt.setString(2,custId);
+			pstmt.executeUpdate();
+			System.out.println("Insert ordersummary successfull");
+			
 
+			
+
+			// Insert each item into OrderProduct table using OrderId from previous INSERT
 			// Update total amount for order record
-
 			// Here is the code to traverse through a HashMap
 			// Each entry in the HashMap is an ArrayList with item 0-id, 1-name, 2-quantity, 3-price
-
 		
 			Iterator<Map.Entry<String, ArrayList<Object>>> iterator = productList.entrySet().iterator();
 			while (iterator.hasNext())
@@ -68,18 +80,26 @@ try(Connection con = DriverManager.getConnection(url,uid,ps); Statement stm = co
 				String productId = (String) product.get(0);
 	        	String price = (String) product.get(2);
 				double pr = Double.parseDouble(price);
-				int qty = ( (Integer)product.get(3)).intValue();
+				int qty = ((Integer)product.get(3)).intValue();
+				int prodid = Integer.parseInt(productId);
 				
-				String sqlinpo = ("INSERT INTO orderproduct ?,?,?,?");
+				System.out.println(productId);
+				System.out.println(price);
+				System.out.println(pr);
+				System.out.println(qty);
+				System.out.println("Order id = " + orderId);
+
+				String sqlinpo = ("INSERT INTO orderproduct (productId, quantity, price) VALUES (ordersummary.orderId,?,?,?)");
 				PreparedStatement pst4 = con.prepareStatement(sqlinpo);
-				pst4.setInt(1,orderId);
-				pst4.setInt(2,Integer.parseInt(productId));
-				pst4.setInt(3,qty);
-				pst4.setDouble(4,pr);
+				//pst4.setInt(1,orderId);
+				pst4.setInt(1,prodid);
+				pst4.setInt(2,qty);
+				pst4.setDouble(3,pr);
 				pst4.executeUpdate();
 				double totitemprice = qty*pr;
             	tot += totitemprice;
 			}
+			System.out.println("We got here post insert"); //DOES NOT REACH THIS AREA
 			String updatekeys = "UPDATE ordersummary SET totalAmount = ? WHERE orderId = ?";
 			PreparedStatement pst5 = con.prepareStatement(updatekeys);
 			pst5.setDouble(1,tot);
@@ -109,10 +129,7 @@ try(Connection con = DriverManager.getConnection(url,uid,ps); Statement stm = co
 			productList.clear();
 			
 			
-
-
 // Print out order summary
-
 // Clear cart if order placed successfully
 		}
 	}
@@ -121,12 +138,9 @@ try(Connection con = DriverManager.getConnection(url,uid,ps); Statement stm = co
 	}
 	con.close();
 	}catch(SQLException e){
-		System.exit(1);
+		out.println("<body><h3>"+e+"</h3></body>");
 	}
-
 	
-
-
 %>
 </BODY>
 </HTML>
