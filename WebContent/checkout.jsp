@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>Ray's Grocery CheckOut Line</title>
+<title>Future Technology Wholesaler CheckOut</title>
 </head>
 <body>
 
