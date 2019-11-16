@@ -4,7 +4,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>YOUR NAME Grocery Order List</title>
+<title>Future Technology Wholesaler Order List</title>
 </head>
 <body>
 
@@ -23,12 +23,10 @@ catch (java.lang.ClassNotFoundException e)
 // Useful code for formatting currency values:
  NumberFormat currFormat = NumberFormat.getCurrencyInstance();
 // out.println(currFormat.format(5.0);  // Prints $5.00 
-
 // Make connection
 String url = "jdbc:sqlserver://sql04.ok.ubc.ca:1433;DatabaseName=db_narndt;";
 String uid = "narndt";
 String ps = "43873165";
-
 try (	Connection con = DriverManager.getConnection(url,uid,ps);
 	 	Statement stmt = con.createStatement();
 ){
