@@ -31,7 +31,7 @@ String ps = "43873165";
 try(Connection con = DriverManager.getConnection(url,uid,ps);){
 	
 	Boolean tester = false;
-	String sql = "SELECT firstName, lastName, customerId  FROM customer";
+	String sql = "SELECT customerId  FROM customer";
 	PreparedStatement pst = con.prepareStatement(sql);
 	ResultSet rst = pst.executeQuery();
 	while(rst.next() && tester == false){
@@ -41,27 +41,29 @@ try(Connection con = DriverManager.getConnection(url,uid,ps);){
 		}
 	}
 	
-	if(tester == true){
-		String fname = rst.getString("firstName");
-		String lname = rst.getString("lastName");
-		String fullname = (fname + " " + lname);
-		
+	if(tester == true){		
 		if(productList.size() == 0){
 			out.println("<body><h1>Your shopping cart is empty. Please go back and add something.</h1></body>");
 		}
 		else{
 			//Use retrieval of auto-generated keys.
+			DateFormat dateform = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+			Date dateup = new Date(System.currentTimeMillis());
+			String todaydate = dateform.format(dateup);
+			System.out.println("'"+todaydate+"'");
 			
-			String sql3 = "INSERT INTO ordersummary (totalAmount,customerId) VALUES (?,?)";
+			String sql3 = "INSERT INTO ordersummary (customerId, orderDate, totalAmount) VALUES (?,?,?)";
 			PreparedStatement pstmt = con.prepareStatement(sql3, Statement.RETURN_GENERATED_KEYS);
 			float tot = 0;
-			pstmt.setFloat(1,tot);
-			pstmt.setString(2,custId);
+			pstmt.setString(1,custId);
+			pstmt.setString(2,todaydate);
+			pstmt.setFloat(3,tot);
 			pstmt.executeUpdate();
 			System.out.println("Insert ordersummary successfull");
 			ResultSet keys = pstmt.getGeneratedKeys();
 			keys.next();
 			int orderId = keys.getInt(1);
+			System.out.println("order stuff is done");
 			
 			
 			
@@ -97,20 +99,15 @@ try(Connection con = DriverManager.getConnection(url,uid,ps);){
 				Float totitemprice = qty*pr;
             	tot += totitemprice;
 			}
-			DateFormat dateform = new SimpleDateFormat("YYYY-MM-DD HH:MM:SS");
-			Date dateup = new Date();
-			String todaydate = dateform.format(dateup);
-			System.out.println(todaydate);
+
+			
 			String updatekeys = "UPDATE ordersummary SET totalAmount = ? WHERE orderId = ?";
 			PreparedStatement pst5 = con.prepareStatement(updatekeys);
 			pst5.setFloat(1,tot);
 			pst5.setInt(2,orderId);
 			pst5.executeUpdate();
-			String updateDate = "UPDATE ordersummary SET orderdate = '?' WHERE orderId = ?";
-			PreparedStatement pst6 = con.prepareStatement(updatekeys);
-			pst6.setString(1,todaydate);
-			pst6.setInt(2,orderId);
-			//pst6.executeUpdate();
+			
+
 			//HTML time
 			String productgrab = "SELECT product.productId, productName, quantity, price FROM product,orderproduct WHERE product.productId = orderproduct.productId AND orderId = ? ";
 			PreparedStatement pst7 = con.prepareStatement(productgrab);
@@ -122,10 +119,19 @@ try(Connection con = DriverManager.getConnection(url,uid,ps);){
 			while(rstins.next()){
 				int quant = Integer.parseInt(rstins.getString("quantity"));
 				double pric = Double.parseDouble(rstins.getString("price"));
-				double subt = quant*pric;
-				out.println("<tr><td>"+rstins.getString("productId")+"</td><td>"+rstins.getString("productName")+"</td><td>"+quant+"</td><td"+pric+"</td><td>"+subt+"</td></tr>");
+				double subt = (quant*pric);
+				System.out.println(quant);
+				out.println("<tr><td>"+rstins.getString("productId")+"</td><td>"+rstins.getString("productName")+"</td><td>"+quant+"</td><td$"+pric+"</td><td>$"+subt+"</td></tr>");
 				
 			}
+			String namegrab = "SELECT firstName, lastName FROM customer WHERE customerId = ?";
+			PreparedStatement namer = con.prepareStatement(namegrab);
+			namer.setString(1,custId);
+			ResultSet nameset = namer.executeQuery();
+			nameset.next();
+			String fname = nameset.getString("firstName");
+			String lname = nameset.getString("lastName");
+			String fullname = (fname +" "+ lname);
 			
 			out.println("<tr><td>Order Total</td><td>$"+tot+"</td></tr></tbody></table>");
 			out.println("<h1>Order completed. Order will be shipped to your address</h1>");
