@@ -12,7 +12,7 @@ products are shown --%>
 <!DOCTYPE html>
 <html>
 <head>
-<title>Legal Future Tech Wholesaler</title>
+<title>Legal Future Technology Wholesaler</title>
 </head>
 <body>
 
