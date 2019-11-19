@@ -147,8 +147,7 @@ INSERT INTO category(categoryName) VALUES ('Misc Fun Technology');
 INSERT product(productName, categoryId, productDesc, productPrice) VALUES ('10ft Wireless phone charger', 1, 'Creates a wireless field that chargers any phone within.',399.00);
 INSERT product(productName, categoryId, productDesc, productPrice) VALUES ('Modified St Judes mechanical heart valve.', 2, 'A modified mechanical heart valve.',25999.99);
 INSERT product(productName, categoryId, productDesc, productPrice) VALUES ('Modified St Judes mechanical heart valve.', 2, 'A modified mechanical heart valve.',399.00);
-
-
+INSERT product(productName, categoryId, productDesc, productPrice) VALUES ('緑おちゃ', 4, '私は緑おちゃ ',3.00);
     
 INSERT INTO customer (firstName, lastName, email, phonenum, address, city, state, postalCode, country, userid, password) VALUES ('Noah', 'Anderson', 'a.anderson@gmail.com', '204-111-2222', '103 AnyWhere Street', 'Winnipeg', 'MB', 'R3X 45T', 'Canada', 'arnold' , 'test');
 INSERT INTO customer (firstName, lastName, email, phonenum, address, city, state, postalCode, country, userid, password) VALUES ('Jordan', 'Brown', 'bobby.brown@hotmail.ca', '572-342-8911', '222 Bush Avenue', 'Boston', 'MA', '22222', 'United States', 'bobby' , 'bobby');
