@@ -16,7 +16,6 @@
 <%
 try {
 	// prep
-	NumberFormat numberFormat = NumberFormat.getInstance();
 	getConnection();
 	
 	// statements
