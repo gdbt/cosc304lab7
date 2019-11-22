@@ -40,14 +40,17 @@
 			System.out.println(pname);
 			System.out.println(price);
 			System.out.println(imgurl);
+			try{
 			if(imgurl.length() > 0){
 				out.println("<img src=\""+imgurl+"\">"); //Image location may need quotations, so i put them anyways.
 				
 				out.println("<img src=\"displayImage.jsp?id="+productId+"\">"); //checks the product id if there is one there
+			}}catch(NullPointerException e){
+				
 			}
-			else{
+			//else{
 				//if there is no imgurl
-			}
+			//}
 			out.println("<table><tbody><tr><th>Id</th><td>"+productId+"</td></tr>"); //making the mini table
 			out.println("<tr><th>Price</th><td>$"+price+"</td></tr></tbody></table>");
 			out.println("<h4>Description!</h4>");
@@ -70,4 +73,3 @@
 
 </body>
 </html>
-
