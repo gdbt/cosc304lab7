@@ -49,32 +49,55 @@ try (Connection con = DriverManager.getConnection(url,uid,ps);
 	
 	if (!hasQuery){
 		// prepared statement listing all products
-		PreparedStatement allprodpst = con.prepareStatement("SELECT * FROM product");
+		PreparedStatement allprodpst = con.prepareStatement("SELECT * FROM product,category WHERE product.categoryId = category.categoryId ORDER BY category.categoryId ASC");
 		allprodrst = allprodpst.executeQuery();
 		
 		// print all products
-		out.println("<h2>All Products</h2><table><tr><th></th><th>Product Name </th><th>Price </th></tr>");
+		out.println("<h2>All Products</h2><table class=table border=1><tbody><tr><th></th><th>Product Name </th><th>Price </th><th>Category</th</tr>");
 		while (allprodrst.next()) {
 			//For each product create a link of the form
 			// addcart.jsp?id=productId&name=productName&price=productPrice
 			
 			String produrl = "\"addcart.jsp?id="+allprodrst.getString(1)+"&name="+allprodrst.getString(2)+"&price="+allprodrst.getString("productPrice"); 
+			String produrl2 = "\"product.jsp?id="+allprodrst.getString(1); 
+			String namer = allprodrst.getString("productName");
+			String catname = allprodrst.getString("categoryName");
+			int catid = Integer.parseInt(allprodrst.getString("categoryId"));
 			// Print out the ResultSet
-			out.println("<tr><td><a href="+produrl+"\">Add to cart</a></td><td>"+allprodrst.getString(2)+"</td><td>"+currFormat.format(allprodrst.getFloat("productPrice"))+"</td></tr>");
+			String catcolorcode = "#ff0080";
+			if(catid == 2){
+				catcolorcode = "#2929A3";
+			}
+			else if(catid == 3){
+				catcolorcode = "#004D1A";
+			}
+			out.println("<tr><td><a href="+produrl+"\">Add to cart</a></td><td><a href="+produrl2+"\">"+namer+"</a></td><td>"+currFormat.format(allprodrst.getFloat("productPrice"))+"</td><td><font color=\""+catcolorcode+"\">"+catname+"</font></td></tr>");
 		}
-		out.println("</table>");	
+		out.println("</tbody></table>");	
 	}
 	else{
 		// prepared statement listing queried products
-		PreparedStatement prodquerypst = con.prepareStatement("SELECT * FROM product WHERE productName LIKE ?");
+		PreparedStatement prodquerypst = con.prepareStatement("SELECT * FROM product,category WHERE product.categoryId = category.categoryId and productName LIKE ? ORDER BY category.categoryId ASC");
 		prodquerypst.setString(1, "%"+name+"%");
 		prodqueryrst = prodquerypst.executeQuery();
 		
+		
 		// print query resultset 
-		out.println("<h2>Products containing '"+name+"'</h2><table><tr><th></th><th>Product Name </th><th>Price </th></tr>");
+		out.println("<h2>Products containing '"+name+"'</h2><table><tr><th></th><th>Product Name </th><th>Price </th><th>Category</th></tr>");
 		while (prodqueryrst.next()){
-			String produrl = "addcart.jsp?id="+prodqueryrst.getString(1)+"&name="+prodqueryrst.getString(2)+"&price="+prodqueryrst.getFloat(3);
-			out.println("<tr><td><a href="+produrl+">Add to cart</a></td><td>"+prodqueryrst.getString(2)+"</td><td>"+currFormat.format(prodqueryrst.getFloat(3))+"</td></tr>");
+			String catnames = prodqueryrst.getString("categoryName");
+			int catid = Integer.parseInt(prodqueryrst.getString("categoryId"));
+			// Print out the ResultSet
+			String catcolorcode = "#ff0080";
+			if(catid == 2){
+				catcolorcode = "#2929A3";
+			}
+			else if(catid == 3){
+				catcolorcode = "#004D1A";
+			}
+			
+			String produrl = "product.jsp?id="+prodqueryrst.getString(1)+"&name="+prodqueryrst.getString(2)+"&price="+prodqueryrst.getFloat(3);
+			out.println("<tr><td><a href="+produrl+">Add to cart</a></td><td>"+prodqueryrst.getString(2)+"</td><td>"+currFormat.format(prodqueryrst.getFloat(3))+"</td><td><font color=\""+catcolorcode+"\">"+catnames+"</font></td></tr>");
 		}
 		out.println("</table>");
 	}
