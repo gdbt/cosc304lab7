@@ -137,7 +137,7 @@ try(Connection con = DriverManager.getConnection(url,uid,ps);){
 			out.println("<h1>Order completed. Order will be shipped to your address</h1>");
 			out.println("<h1>Your order number is: "+ orderId+"</h1>");
 			out.println("<h1>Shipping to customer: "+custId+" Name: "+fullname+"</h1>");
-			out.println("<h2><a href = shop.html>Return to shopping</a></h2>");
+			out.println("<h2><a href = index.jsp>Return to shopping</a></h2>");
 			productList.clear();
 			
 			
