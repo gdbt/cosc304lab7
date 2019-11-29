@@ -1,50 +1,138 @@
-
 <!DOCTYPE html>
 <html>
 <head>
 <title>Administrator Page</title>
 </head>
 <body>
-
 <%@include file="auth.jsp"%>
-<%@ include file="jdbc.jsp" %>
-
+<%@include file="jdbc.jsp"%>
+<%@ page import="java.util.*,java.sql.*,java.io.*,java.nio.*" %>
 <%
-// TODO: Write SQL query that prints out total order amount by day
-
-try{
-	String userName = (String) session.getAttribute("authenticatedUser");
+try {
+	// prep
 	getConnection();
 	
-	String getcustId = "SELECT customerid FROM customer WHERE userid = ? ";
-	PreparedStatement pstmt = con.prepareStatement(getcustId);
-	pstmt.setString(1,userName);
-	ResultSet rst = pstmt.executeQuery();
-	rst.next();
-	int custid = Integer.parseInt(rst.getString(1));
-	String sql = "SELECT DISTINCT orderDate, SUM(totalamount) FROM ordersummary WHERE customerid = ? GROUP BY orderDate";
-	PreparedStatement pstmt2 = con.prepareStatement(sql);
-	pstmt2.setInt(1, custid);
-	ResultSet rst2 = pstmt2.executeQuery();
+ 	// secured by login
+	if (!authenticated) {
+		String errorMessage = "Error. You need to login before accessing this page.";
+		session.setAttribute("errorMessage", errorMessage);
+		out.println(errorMessage);
+		response.sendRedirect("login.jsp"); // redirect to login page
+	}  
 	
+ 	
+	// TODO: Write SQL query that prints out total order amount by day
+	String ordersSql = "SELECT DISTINCT orderDate, SUM(totalAmount) FROM ordersummary GROUP BY orderDate";
+	PreparedStatement ordersPst = con.prepareStatement(ordersSql);
+	ResultSet ordersRst = ordersPst.executeQuery();
+	
+	out.println("<br>");
 	out.println("<h2>Administrator Sales Report by Day</h2>");
-	out.println("<table class=table border=1><tbody><tr><th>Date </th><th> Total Order Amount </th></tr>");
-	while(rst2.next()){
-		Date date = rst2.getDate(1);
-		double orderTotal = Double.parseDouble(rst2.getString(2));
-		out.println("<tr><td>"+date+"</td><td>$"+orderTotal+"</td></tr>");
+	out.println("<table class=table border=1><tr><th>Date</th><th>Total Order Amount</th></tr>");
+	while(ordersRst.next()){
+		out.println("<tr><td>"+ordersRst.getDate(1)+"</td><td>$"+ordersRst.getString(2)+"</td></tr>");
 	}
+	out.println("</table>");
+	out.println("</br>");
 	
-	out.println("</tbody></table>");
+	// list all customers
+	String getallcustSql = "SELECT * FROM customer";
+	PreparedStatement getallcustpst = con.prepareStatement(getallcustSql,Statement.RETURN_GENERATED_KEYS);
 	
-	
+	ResultSet getallcustrst = getallcustpst.executeQuery();
+
+	out.println("<h2>Customer List</h2>");
+	out.println("<table class=table border=1>");
+	out.println("<tr><th>Id</th><th>First Name</th><th>Last Name</th><th>Email</th><th>Phone Number</th><th>Address</th><th>City</th><th>State</th><th>Postal Code</th><th>Country Code</th>");
+	while (getallcustrst.next()){
+		out.println("<tr><td>"+getallcustrst.getString(1)+"</td>"+
+					"<td>"+getallcustrst.getString(2)+"</td>"+
+					"<td>"+getallcustrst.getString(3)+"</td>"+
+					"<td>"+getallcustrst.getString(4)+"</td>"+
+					"<td>"+getallcustrst.getString(5)+"</td>"+
+					"<td>"+getallcustrst.getString(6)+"</td>"+
+					"<td>"+getallcustrst.getString(7)+"</td>"+
+					"<td>"+getallcustrst.getString(8)+"</td>"+
+					"<td>"+getallcustrst.getString(9)+"</td>"+
+					"<td>"+getallcustrst.getString(10)+
+					"</td></tr>"
+		);
+	}
+	out.println("</table>");
 	
 }
-catch(SQLException e){
-	out.println(e);
+catch (Exception e){
+	out.println("Exception: " + e);
 }
 %>
 
+<div>
+	<h2 align="left">Add New Product</h2>
+	
+	<form name="MyForm" method=post action="addProd.jsp">
+	<table style="display:inline">
+	<tr>
+		<td><div align="left"><font face="Arial, Helvetica, sans-serif" size="2">Product Name:</font></div></td>
+		<td><input type="text" name="productName" size=10 maxlength="40"></td>
+	</tr>
+	<tr>
+		<td><div align="left"><font face="Arial, Helvetica, sans-serif" size="2">Category ID:</font></div></td>
+		<td><input type="number" name="categoryId" size=10 maxlength="5"></td>
+	</tr>
+	<tr>
+		<td><div align="left"><font face="Arial, Helvetica, sans-serif" size="2">Product Description:</font></div></td>
+		<td><input type="text" name="productDesc" size=10 maxlength="50"></td>
+	</tr>
+	<tr>
+		<td><div align="left"><font face="Arial, Helvetica, sans-serif" size="2">Product Price:</font></div></td>
+		<td><input type="text" name="productPrice" size=10 maxlength="12"></td>
+	</tr>
+	</table>
+	
+	<input class="submit" type="submit" value="Add this product">
+	
+	</form>
+	
+</div>
+<div>
+	<h2 align="left">Update a Product</h2>
+	<form name="MyForm" method="get" action="updateProd.jsp">
+	<table style="display:inline">
+	<tr>
+		<td><div align="left"><font face="Arial, Helvetica, sans-serif" size="2">Enter product ID (do not leave empty):</font></div></td>
+		<td><input type="text" name="productId" size=10 maxlength="5"></td>
+	</tr>
+	<tr>
+		<td><div align="left"><font face="Arial, Helvetica, sans-serif" size="2">Enter a new name:</font></div></td>
+		<td><input type="text" name="productName" size=10 maxlength="40"></td>
+	</tr>
+	<tr>
+		<td><div align="left"><font face="Arial, Helvetica, sans-serif" size="2">Enter new category id:</font></div></td>
+		<td><input type="text" name="categoryId" size=10 maxlength="5"></td>
+	</tr>
+	<tr>
+		<td><div align="left"><font face="Arial, Helvetica, sans-serif" size="2">Enter new product description:</font></div></td>
+		<td><input type="text" name="productDesc" size=10 maxlength="50"></td>
+	</tr>
+	<tr>
+		<td><div align="left"><font face="Arial, Helvetica, sans-serif" size="2">Enter new product price:</font></div></td>
+		<td><input type="text" name="productPrice" size=10 maxlength="12"></td>
+	</tr>
+	</table>
+	<input class="submit" type= "submit" value="Submit details">
+	</form>
+</div>
+<div>
+	<h2 align="left">Delete a Product</h2>
+	<form name="MyForm" method="get" action="deleteProd.jsp">
+	<table style="display:inline">
+	<tr>
+		<td><div align="left"><font face="Arial, Helvetica, sans-serif" size="2">Enter product ID:</font></div></td>
+		<td><input type="text" name="productId" size=10 maxlength="5"></td>
+	</tr>
+	</table>
+	<input class="submit" type= "submit" value="Delete this product">
+	</form>
+</div>
 </body>
 </html>
-
