@@ -20,27 +20,24 @@ try {
 		response.sendRedirect("login.jsp"); // redirect to login page
 	}  
 	
- 	
+ 	out.println("<h1>Administrator</h1>");
 	// TODO: Write SQL query that prints out total order amount by day
 	String ordersSql = "SELECT DISTINCT orderDate, SUM(totalAmount) FROM ordersummary GROUP BY orderDate";
 	PreparedStatement ordersPst = con.prepareStatement(ordersSql);
 	ResultSet ordersRst = ordersPst.executeQuery();
 	
-	out.println("<br>");
-	out.println("<h2>Administrator Sales Report by Day</h2>");
+	out.println("<h2>Sales Report by Day</h2>");
 	out.println("<table class=table border=1><tr><th>Date</th><th>Total Order Amount</th></tr>");
 	while(ordersRst.next()){
 		out.println("<tr><td>"+ordersRst.getDate(1)+"</td><td>$"+ordersRst.getString(2)+"</td></tr>");
 	}
 	out.println("</table>");
-	out.println("</br>");
 	
 	// list all customers
 	String getallcustSql = "SELECT * FROM customer";
 	PreparedStatement getallcustpst = con.prepareStatement(getallcustSql,Statement.RETURN_GENERATED_KEYS);
 	
 	ResultSet getallcustrst = getallcustpst.executeQuery();
-
 	out.println("<h2>Customer List</h2>");
 	out.println("<table class=table border=1>");
 	out.println("<tr><th>Id</th><th>First Name</th><th>Last Name</th><th>Email</th><th>Phone Number</th><th>Address</th><th>City</th><th>State</th><th>Postal Code</th><th>Country Code</th>");
@@ -128,10 +125,44 @@ catch (Exception e){
 	<table style="display:inline">
 	<tr>
 		<td><div align="left"><font face="Arial, Helvetica, sans-serif" size="2">Enter product ID:</font></div></td>
-		<td><input type="text" name="productId" size=10 maxlength="5"></td>
+		<td><input type="text" name="warehouseName" size=10 maxlength="5"></td>
 	</tr>
 	</table>
 	<input class="submit" type= "submit" value="Delete this product">
+	</form>
+</div>
+<div>
+	<h2 align="left">Add New Warehouse</h2>
+	
+	<form name="MyForm" method=post action="addWarehouse.jsp">
+	<table style="display:inline">
+	<tr>
+		<td><div align="left"><font face="Arial, Helvetica, sans-serif" size="2">Warehouse Name:</font></div></td>
+		<td><input type="text" name="warehouseName" size=10 maxlength="40"></td>
+	</tr>
+	</table>
+	
+	<input class="submit" type="submit" value="Add new warehouse">
+	
+	</form>
+</div>
+<div>
+	<h2 align="left">Update a Warehouse</h2>
+	
+	<form name="MyForm" method=post action="updateWarehouse.jsp">
+	<table style="display:inline">
+	<tr>
+		<td><div align="left"><font face="Arial, Helvetica, sans-serif" size="2">Old Warehouse Name:</font></div></td>
+		<td><input type="text" name="oldName" size=10 maxlength="30"></td>
+	</tr>
+		<tr>
+		<td><div align="left"><font face="Arial, Helvetica, sans-serif" size="2">New Warehouse Name:</font></div></td>
+		<td><input type="text" name="newName" size=10 maxlength="30"></td>
+	</tr>
+	</table>
+	
+	<input class="submit" type="submit" value="Change warehouse name">
+	
 	</form>
 </div>
 </body>
